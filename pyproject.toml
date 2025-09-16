@@ -1,0 +1,83 @@
+[project]
+name = "visu_hlo"
+dynamic = ['version']
+description = "Displays the HLO representation of (un-)jitted functions as SVG"
+authors = [{name = "Pierre Chanial", email = "chanial@apc.in2p3.fr"}]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "jax>=0.4.0",
+    "jaxlib>=0.4.0",
+    "graphviz>=0.18.2",
+]
+classifiers = [
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Software Development :: Debuggers",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[dependency-groups]
+cuda12 = [
+    "jax[cuda12]>=0.4",
+]
+dev = [
+    "ipython>=8.18.1",
+    "pytest>=8.4.1",
+    "pytest_mock",
+]
+
+[project.urls]
+repository = 'https://github.com/CMBSciPol/visu_hlo'
+
+[build-system]
+requires = ['hatchling', 'hatch-vcs']
+build-backend = 'hatchling.build'
+
+[tool.hatch.version]
+source = 'vcs'
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test*"]
+addopts = [
+    "--verbose",
+    "--tb=short",
+    "--strict-markers",
+    "--strict-config",
+    "--color=yes",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+markers = [
+    "integration: Integration tests",
+    "slow: Slow running tests",
+]
+
+[tool.ruff]
+line-length = 100
+fix = true           # autofix issues
+force-exclude = true # useful with ruff-pre-commit plugin
+src = ['src', 'tests']
+
+[tool.ruff.lint]
+select = [
+    'ARG001', # flake8-unused-function-arguments
+    'E',      # pycodestyle-errors
+    'F',      # pyflakes
+    'I',      # isort
+    'UP',     # pyupgrade
+    'T10',    # flake8-debugger
+]
+
+[tool.ruff.format]
+quote-style = 'single'

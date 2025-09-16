@@ -1,0 +1,13 @@
+__pycache__/
+dist/
+build/
+/.venv/
+/.idea/
+
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+
+# Sphinx generated files
+docs/build/
+docs/source/api/generated/
