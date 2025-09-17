@@ -62,6 +62,24 @@ def _get_compiled_dot_graph(f, *args, **keywords) -> str:
 
 
 def _display_svg(svg_graph: str) -> None:
-    with NamedTemporaryFile(suffix='.svg', delete=False) as file:
-        Path(file.name).write_text(svg_graph)
-        subprocess.run([DISPLAY_PROGRAM, file.name])
+    if _in_notebook():
+        from IPython.display import SVG, display
+
+        display(SVG(svg_graph))
+    else:
+        with NamedTemporaryFile(suffix='.svg', delete=False) as file:
+            Path(file.name).write_text(svg_graph)
+            subprocess.run([DISPLAY_PROGRAM, file.name])
+
+
+def _in_notebook() -> bool:
+    try:
+        from IPython import get_ipython
+
+        if 'IPKernelApp' not in get_ipython().config:  # pragma: no cover
+            return False
+    except ImportError:
+        return False
+    except AttributeError:
+        return False
+    return True

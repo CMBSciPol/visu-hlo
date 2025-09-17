@@ -1,5 +1,5 @@
 [project]
-name = "visu_hlo"
+name = "visu-hlo"
 dynamic = ['version']
 description = "Displays the HLO representation of (un-)jitted functions as SVG"
 authors = [{name = "Pierre Chanial", email = "chanial@apc.in2p3.fr"}]
@@ -31,6 +31,16 @@ dev = [
     "ipython>=8.18.1",
     "pytest>=8.4.1",
     "pytest_mock",
+]
+docs = [
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "myst-parser[linkify]>=2.0.0",
+    "nbsphinx>=0.9.0",
+    "jupyter>=1.0.0",
+    "matplotlib>=3.7.0",
+    "numpy>=1.24.0",
+    "pillow>=9.0.0",
 ]
 
 [project.urls]
@@ -71,7 +81,6 @@ src = ['src', 'tests']
 
 [tool.ruff.lint]
 select = [
-    'ARG001', # flake8-unused-function-arguments
     'E',      # pycodestyle-errors
     'F',      # pyflakes
     'I',      # isort
