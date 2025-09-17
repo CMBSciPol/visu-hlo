@@ -20,12 +20,11 @@ from visu_hlo import show
 def func(x):
     return 3 * x * 2
 
-# Visualize original function
-show(func, jnp.ones(10))
-
 # Visualize jitted function
 show(jit(func), jnp.ones(10))
 ```
+![Jitted Function HLO](examples/jitted_function.svg)
+
 
 ## Contents
 

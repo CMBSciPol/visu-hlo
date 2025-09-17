@@ -33,6 +33,11 @@ def func(x):
 show(func, jnp.ones(10))  # Shows HLO for compilation
 ```
 
+The non-jitted function shows the computation graph as JAX would compile it:
+
+![Original Function HLO](examples/original_function.svg)
+
+
 ### Jitted Function
 ```python
 from jax import jit
@@ -43,6 +48,19 @@ def jitted_func(x):
 
 show(jitted_func, jnp.ones(10))  # Shows optimized HLO
 ```
+The jitted function shows the optimized computation graph after JIT compilation:
+
+![Jitted Function HLO](examples/jitted_function.svg)
+
+
+### Key Differences
+
+When comparing the two visualizations:
+
+1. **Optimization**: The jitted version may show fused operations
+2. **Constant Folding**: Constants like `3 * 2 = 6` may be pre-computed
+3. **Memory Layout**: Different memory access patterns may be visible
+4. **Operation Count**: Fewer nodes in the optimized version
 
 ## Function Arguments
 
@@ -53,17 +71,6 @@ def multi_arg_func(x, y, scale=1.0):
     return (x + y) * scale
 
 show(multi_arg_func, jnp.ones(5), jnp.zeros(5), scale=2.0)
-```
-
-## Complex Operations
-
-visu-hlo works with any JAX operation:
-
-```python
-def complex_func(x):
-    return jnp.fft.fft(jnp.sin(x)) + jnp.mean(x**2)
-
-show(complex_func, jnp.linspace(0, 2*jnp.pi, 64))
 ```
 
 ## Understanding the Output
