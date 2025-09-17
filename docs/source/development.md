@@ -10,7 +10,12 @@ cd visu-hlo
 
 2. Install in development mode:
 ```bash
-pip install --group dev .
+pip install --group dev -e .
+```
+3. Install pre-commit:
+```bash
+pipx --user install pre-commit
+pre-commit install
 ```
 
 ## Running Tests
@@ -28,30 +33,20 @@ pytest -v
 pytest -m integration  # Integration tests only
 pytest tests/test_platform.py  # Specific test file
 ```
-
-### Test Environment
-
 Tests automatically configure JAX to use CPU-only mode for reproducibility. The test suite includes:
-
 - **Unit tests**: Individual function testing with mocks
 - **Integration tests**: End-to-end testing with real JAX functions
 - **Platform tests**: Cross-platform compatibility testing
 
 ## Code Quality
 
-The project uses several tools for code quality:
-
-### Ruff (Linting and Formatting)
+The project uses several pre-commit hooks for code quality. They include
+- ruff (linting and formatting)
+- mypy (type checking)
+- and others
 ```bash
-# Check code style
-ruff check .
-
-# Format code
-ruff format .
+pre-commit run --all-files
 ```
-
-### Type Checking
-The project uses type hints throughout. Verify with mypy or your IDE.
 
 ## Documentation
 
@@ -63,7 +58,7 @@ pip install --group docs .
 
 # Build HTML documentation
 cd docs
-sphinx-build -b html source _build/html
+make html
 ```
 
 The documentation uses:
@@ -92,11 +87,11 @@ visu-hlo/
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass: `pytest`
-6. Check code style: `ruff check .`
+2. Install pre-commit
+3. Create a feature branch: `git checkout -b feature-name`
+4. Make your changes
+5. Add tests for new functionality
+6. Ensure all tests pass: `pytest`
 7. Submit a pull request
 
 ## Release Process

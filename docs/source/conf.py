@@ -31,7 +31,7 @@ exclude_patterns = []
 
 # HTML output configuration
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+html_static_path = []
 html_title = f'{project} v{version}'
 
 # Extension configuration
