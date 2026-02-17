@@ -8,7 +8,6 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "jax>=0.4.0",
-    "jaxlib>=0.4.0",
     "graphviz>=0.18.2",
 ]
 classifiers = [
@@ -21,12 +20,10 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 
 [dependency-groups]
-cuda12 = [
-    "jax[cuda12]>=0.4",
-]
 dev = [
     "ipython>=8.18.1",
     "pytest>=8.4.1",
@@ -42,6 +39,8 @@ docs = [
     "numpy>=1.24.0",
     "pillow>=9.0.0",
 ]
+cuda12 = ['jax[cuda12]>=0.4']
+cuda13 = ['jax[cuda13]>=0.7; python_version>="3.11"']
 
 [project.urls]
 repository = 'https://github.com/CMBSciPol/visu_hlo'

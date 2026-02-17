@@ -51,14 +51,19 @@ def show(f, *args, **keywords) -> None:
 
 def _get_original_dot_graph(f, *args, **keywords) -> str:
     lowered = jax.jit(f).lower(*args, **keywords)
-    xc = lowered.compiler_ir(dialect='hlo')
-    return xc.as_hlo_dot_graph()
+    hlo_text = lowered.as_text('hlo')
+    return _get_dot_graph_from_hlo(hlo_text)
 
 
 def _get_compiled_dot_graph(f, *args, **keywords) -> str:
     lowered = jax.jit(f).lower(*args, **keywords)
     hlo_text = lowered.compile().as_text()
-    return xla.hlo_module_to_dot_graph(xla.hlo_module_from_text(hlo_text))
+    return _get_dot_graph_from_hlo(hlo_text)
+
+
+def _get_dot_graph_from_hlo(hlo_text: str) -> str:
+    hlo_module = xla.hlo_module_from_text(hlo_text)
+    return xla.hlo_module_to_dot_graph(hlo_module)
 
 
 def _display_svg(svg_graph: str) -> None:
