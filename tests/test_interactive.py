@@ -5,7 +5,7 @@ import jax.numpy as jnp
 import pytest_mock
 
 from visu_hlo import show
-from visu_hlo._interactive import _unwrap
+from visu_hlo._api import _unwrap
 
 
 class TestShowDispatchString:
@@ -13,10 +13,10 @@ class TestShowDispatchString:
 
     def test_hlo_string(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that HLO strings are passed directly."""
-        mocked_from_lowered_function = mocker.patch('visu_hlo._interactive.from_lowered_function')
-        mocked_from_compiled_function = mocker.patch('visu_hlo._interactive.from_compiled_function')
-        mocked_from_stable_hlo = mocker.patch('visu_hlo._interactive.from_stable_hlo')
-        mock_viewer = mocker.patch('visu_hlo._interactive.HLOViewer')
+        mocked_from_lowered_function = mocker.patch('visu_hlo._api.from_lowered_function')
+        mocked_from_compiled_function = mocker.patch('visu_hlo._api.from_compiled_function')
+        mocked_from_stable_hlo = mocker.patch('visu_hlo._api.from_stable_hlo')
+        mock_viewer = mocker.patch('visu_hlo._api.HLOViewer')
         hlo_string = 'HloModule test_module'
 
         show(hlo_string)
@@ -29,9 +29,9 @@ class TestShowDispatchString:
     def test_stable_hlo_string(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that StableHLO strings dispatch to from_stable_hlo."""
         mocked_from_stable_hlo = mocker.patch(
-            'visu_hlo._interactive.from_stable_hlo', return_value='HloModule stable_hlo_test'
+            'visu_hlo._api.from_stable_hlo', return_value='HloModule stable_hlo_test'
         )
-        mock_viewer = mocker.patch('visu_hlo._interactive.HLOViewer')
+        mock_viewer = mocker.patch('visu_hlo._api.HLOViewer')
         stablehlo_string = 'module @test { func.func @main() {} }'
 
         show(stablehlo_string)
@@ -45,12 +45,12 @@ class TestShowDispatchJitTrue:
 
     def test_non_jitted_function_gets_jitted(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that non-jitted functions are jitted when jit=True."""
-        mocked_jit = mocker.patch('visu_hlo._interactive.jax.jit')
+        mocked_jit = mocker.patch('visu_hlo._api.jax.jit')
         mocked_jitted_func = mocked_jit.return_value
         mocked_from_compiled = mocker.patch(
-            'visu_hlo._interactive.from_compiled_function', return_value='HloModule test'
+            'visu_hlo._api.from_compiled_function', return_value='HloModule test'
         )
-        mocker.patch('visu_hlo._interactive.HLOViewer')
+        mocker.patch('visu_hlo._api.HLOViewer')
 
         def func(x):
             return x + 1
@@ -64,9 +64,9 @@ class TestShowDispatchJitTrue:
     def test_already_jitted_function_not_re_jitted(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that already jitted functions are not re-jitted."""
         mocked_from_compiled = mocker.patch(
-            'visu_hlo._interactive.from_compiled_function', return_value='HloModule test'
+            'visu_hlo._api.from_compiled_function', return_value='HloModule test'
         )
-        mocker.patch('visu_hlo._interactive.HLOViewer')
+        mocker.patch('visu_hlo._api.HLOViewer')
 
         def func(x):
             return x + 1
@@ -75,7 +75,7 @@ class TestShowDispatchJitTrue:
         jitted_func = jax.jit(func)
 
         # Now patch to verify it's not called again
-        mocked_jit = mocker.patch('visu_hlo._interactive.jax.jit')
+        mocked_jit = mocker.patch('visu_hlo._api.jax.jit')
 
         show(jitted_func, jnp.ones(3), jit=True)
 
@@ -85,9 +85,9 @@ class TestShowDispatchJitTrue:
 
     def test_default_is_jit_true(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that jit=True is the default."""
-        mocked_jit = mocker.patch('visu_hlo._interactive.jax.jit')
-        mocker.patch('visu_hlo._interactive.from_compiled_function', return_value='HloModule test')
-        mocker.patch('visu_hlo._interactive.HLOViewer')
+        mocked_jit = mocker.patch('visu_hlo._api.jax.jit')
+        mocker.patch('visu_hlo._api.from_compiled_function', return_value='HloModule test')
+        mocker.patch('visu_hlo._api.HLOViewer')
 
         def func(x):
             return x + 1
@@ -103,9 +103,9 @@ class TestShowDispatchJitFalse:
     def test_non_jitted_function(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that non-jitted functions dispatch to from_lowered_function."""
         mocked_from_lowered = mocker.patch(
-            'visu_hlo._interactive.from_lowered_function', return_value='HloModule test'
+            'visu_hlo._api.from_lowered_function', return_value='HloModule test'
         )
-        mock_viewer = mocker.patch('visu_hlo._interactive.HLOViewer')
+        mock_viewer = mocker.patch('visu_hlo._api.HLOViewer')
 
         def func(x):
             return x + 1
@@ -119,9 +119,9 @@ class TestShowDispatchJitFalse:
     def test_jitted_function_gets_unwrapped(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that jitted functions are unwrapped when jit=False."""
         mocked_from_lowered = mocker.patch(
-            'visu_hlo._interactive.from_lowered_function', return_value='HloModule test'
+            'visu_hlo._api.from_lowered_function', return_value='HloModule test'
         )
-        mocker.patch('visu_hlo._interactive.HLOViewer')
+        mocker.patch('visu_hlo._api.HLOViewer')
 
         def func(x):
             return x + 1
@@ -141,9 +141,9 @@ class TestShowArguments:
     def test_args_and_kwargs_passed(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that args and kwargs are passed correctly."""
         mocked_from_compiled = mocker.patch(
-            'visu_hlo._interactive.from_compiled_function', return_value='HloModule test'
+            'visu_hlo._api.from_compiled_function', return_value='HloModule test'
         )
-        mocker.patch('visu_hlo._interactive.HLOViewer')
+        mocker.patch('visu_hlo._api.HLOViewer')
 
         def func(x, y, scale=1.0):
             return (x + y) * scale

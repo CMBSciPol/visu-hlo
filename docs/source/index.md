@@ -5,7 +5,7 @@
 ## Features
 
 - 🎯 **Easy Visualization**: Display HLO graphs with a single function call
-- 🔄 **JIT Support**: Works with both regular and jitted JAX functions
+- 🔄 **JIT Control**: View optimized or non-optimized HLO with the `jit` parameter
 - 🖼️ **SVG Output**: High-quality vector graphics that scale perfectly
 - 🖥️ **Cross-Platform**: Supports Linux, macOS, and Windows
 - ⚡ **Lightweight**: Minimal dependencies - just JAX and Graphviz
@@ -14,16 +14,21 @@
 
 ```python
 import jax.numpy as jnp
-from jax import jit
 from visu_hlo import show
 
 def func(x):
     return 3 * x * 2
 
-# Visualize jitted function
-show(jit(func), jnp.ones(10))
+# Display optimized HLO (default)
+show(func, jnp.ones(10))
+
+# Display non-optimized HLO
+show(func, jnp.ones(10), jit=False)
+
+# Save as SVG file
+from visu_hlo import write_svg
+write_svg('graph.svg', func, jnp.ones(10))
 ```
-![Jitted Function HLO](examples/jitted_function.svg)
 
 
 ## Contents
