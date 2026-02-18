@@ -9,17 +9,16 @@
 
 ```python
 import jax.numpy as jnp
-from jax import jit
 from visu_hlo import show
 
 def func(x):
     return 3 * x * 2
 
-# Visualize original function
+# Visualize the graph of the XLA-optimized function
 show(func, jnp.ones(10))
 
-# Visualize jitted function
-show(jit(func), jnp.ones(10))
+# Visualize the graph of the original function
+show(func, jnp.ones(10), jit=False)
 ```
 
 ## Installation
