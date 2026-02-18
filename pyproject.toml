@@ -55,6 +55,14 @@ Issues = 'https://github.com/CMBSciPol/visu-hlo/issues'
 [tool.hatch.version]
 source = 'vcs'
 
+
+[[tool.mypy.overrides]]
+module = [
+    'graphviz',
+    'IPython.*',
+]
+ignore_missing_imports = true
+
 [tool.pytest]
 testpaths = ['tests', 'docs/source']
 addopts = [

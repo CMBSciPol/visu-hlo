@@ -1,11 +1,4 @@
 repos:
-- repo: https://github.com/hadialqattan/pycln
-  rev: "v2.5.0"
-  hooks:
-  - id: pycln
-    args:
-    - --all
-
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: "v0.11.8"
   hooks:
@@ -48,4 +41,4 @@ repos:
     - --show-error-codes
     - --enable-error-code=ignore-without-code
     - --allow-untyped-calls
-    files: ^visu_hlo/
+    files: ^src/visu_hlo/

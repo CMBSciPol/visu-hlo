@@ -5,9 +5,13 @@ import subprocess
 from functools import cached_property
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import TYPE_CHECKING
 
 import graphviz
-from jaxlib.xla_client import _xla as xla
+from jaxlib.xla_client import _xla as xla  # type: ignore[attr-defined]
+
+if TYPE_CHECKING:
+    from IPython.core.interactiveshell import InteractiveShell
 
 if platform.platform().startswith('Linux'):
     DISPLAY_PROGRAM = 'xdg-open'
@@ -68,7 +72,8 @@ class DotGraphViewer:
         Path(path).write_text(svg_graph)
 
     def _as_svg(self) -> str:
-        return graphviz.pipe_string('dot', 'svg', self.dot_graph, encoding='utf-8')
+        result: str = graphviz.pipe_string('dot', 'svg', self.dot_graph, encoding='utf-8')
+        return result
 
     @staticmethod
     def _in_notebook() -> bool:
@@ -78,7 +83,7 @@ class DotGraphViewer:
         except ImportError:
             return False
 
-        shell = get_ipython()
+        shell: InteractiveShell | None = get_ipython()
         if shell is None:
             return False
         if 'IPKernelApp' not in shell.config:
