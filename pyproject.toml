@@ -1,3 +1,7 @@
+[build-system]
+requires = ['hatchling', 'hatch-vcs']
+build-backend = 'hatchling.build'
+
 [project]
 name = 'visu-hlo'
 dynamic = ['version']
@@ -6,10 +10,6 @@ authors = [{name = 'Pierre Chanial', email = 'chanial@apc.in2p3.fr'}]
 license = 'MIT'
 readme = 'README.md'
 requires-python = '>=3.10'
-dependencies = [
-    'jax>=0.4.0',
-    'graphviz>=0.18.2',
-]
 classifiers = [
     'Intended Audience :: Education',
     'Intended Audience :: Science/Research',
@@ -21,6 +21,10 @@ classifiers = [
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
     'Programming Language :: Python :: 3.14',
+]
+dependencies = [
+    'jax>=0.4.0',
+    'graphviz>=0.18.2',
 ]
 
 [dependency-groups]
@@ -44,11 +48,9 @@ cuda12 = ['jax[cuda12]>=0.4']
 cuda13 = ['jax[cuda13]>=0.7; python_version>="3.11"']
 
 [project.urls]
-repository = 'https://github.com/CMBSciPol/visu-hlo'
-
-[build-system]
-requires = ['hatchling', 'hatch-vcs']
-build-backend = 'hatchling.build'
+Documentation = 'https://visu-hlo.readthedocs.io'
+Repository = 'https://github.com/CMBSciPol/visu-hlo'
+Issues = 'https://github.com/CMBSciPol/visu-hlo/issues'
 
 [tool.hatch.version]
 source = 'vcs'

@@ -6,6 +6,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 import pytest_mock
+
 import visu_hlo
 
 pytestmark = pytest.mark.integration
@@ -14,7 +15,7 @@ pytestmark = pytest.mark.integration
 @pytest.mark.parametrize('do_jit', [False, True])
 def test_function(mocker: pytest_mock.MockerFixture, do_jit: bool) -> None:
     """Integration test with jitted function (mocking only display)."""
-    mocker.patch('visu_hlo.DISPLAY_PROGRAM', 'touch')
+    mocker.patch('visu_hlo._display.DISPLAY_PROGRAM', 'touch')
     spied_run = mocker.spy(subprocess, 'run')
 
     def func(x):
