@@ -11,6 +11,8 @@ cd visu-hlo
 2. Install in development mode:
 ```bash
 pip install --group dev -e .
+or
+uv sync
 ```
 3. Install pre-commit:
 ```bash

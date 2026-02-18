@@ -15,32 +15,6 @@ __all__ = ['show', 'write_dot', 'write_svg']
 FunctionOrHLO = Callable[..., Any] | str
 
 
-def _unwrap(f: Callable[..., Any]) -> Callable[..., Any]:
-    """Unwrap jitted functions to get the original function."""
-    while hasattr(f, 'lower') and hasattr(f, '__wrapped__'):
-        f = f.__wrapped__
-    return f
-
-
-def _get_viewer(f: FunctionOrHLO, *args: Any, jit: bool = True, **keywords: Any) -> HLOViewer:
-    """Create an HLOViewer from a function or HLO string."""
-    if isinstance(f, str):
-        if f.startswith('HloModule '):
-            hlo = f
-        else:
-            hlo = from_stable_hlo(f)
-    else:
-        if jit:
-            if not hasattr(f, 'lower'):
-                f = jax.jit(f)
-            hlo = from_compiled_function(f, *args, **keywords)
-        else:
-            f = _unwrap(f)
-            hlo = from_lowered_function(f, *args, **keywords)
-
-    return HLOViewer(hlo)
-
-
 def show(f: FunctionOrHLO, *args: Any, jit: bool = True, **keywords: Any) -> None:
     """Display the HLO representation of functions as SVG.
 
@@ -52,7 +26,9 @@ def show(f: FunctionOrHLO, *args: Any, jit: bool = True, **keywords: Any) -> Non
             non-optimized HLO.
         **keywords: Keyword arguments to be passed to f.
 
-    Usage:
+    Example:
+        To display the XLA-optimized HLO representation of a function:
+
         >>> import jax.numpy as jnp
         >>> from visu_hlo import show
         >>> def func(x):
@@ -78,7 +54,9 @@ def write_dot(
             non-optimized HLO.
         **keywords: Keyword arguments to be passed to f.
 
-    Usage:
+    Example:
+        To write the XLA-optimized HLO representation of a function as an DOT file:
+
         >>> import jax.numpy as jnp
         >>> from visu_hlo import write_dot
         >>> def func(x):
@@ -103,7 +81,9 @@ def write_svg(
             non-optimized HLO.
         **keywords: Keyword arguments to be passed to f.
 
-    Usage:
+    Example:
+        To write the XLA-optimized HLO representation of a function as an SVG file:
+
         >>> import jax.numpy as jnp
         >>> from visu_hlo import write_svg
         >>> def func(x):
@@ -112,3 +92,29 @@ def write_svg(
     """
     viewer = _get_viewer(f, *args, jit=jit, **keywords)
     viewer.write_svg(path)
+
+
+def _get_viewer(f: FunctionOrHLO, *args: Any, jit: bool = True, **keywords: Any) -> HLOViewer:
+    """Create an HLOViewer from a function or HLO string."""
+    if isinstance(f, str):
+        if f.startswith('HloModule '):
+            hlo = f
+        else:
+            hlo = from_stable_hlo(f)
+    else:
+        if jit:
+            if not hasattr(f, 'lower'):
+                f = jax.jit(f)
+            hlo = from_compiled_function(f, *args, **keywords)
+        else:
+            f = _unwrap(f)
+            hlo = from_lowered_function(f, *args, **keywords)
+
+    return HLOViewer(hlo)
+
+
+def _unwrap(f: Callable[..., Any]) -> Callable[..., Any]:
+    """Unwrap jitted functions to get the original function."""
+    while hasattr(f, 'lower') and hasattr(f, '__wrapped__'):
+        f = f.__wrapped__
+    return f

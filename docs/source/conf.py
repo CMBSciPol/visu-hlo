@@ -33,6 +33,9 @@ exclude_patterns = []
 html_theme = 'sphinx_rtd_theme'
 html_static_path = []
 html_title = f'{project} v{version}'
+html_theme_options = {
+    'collapse_navigation': False,  # Expand all sections in sidebar
+}
 
 # Extension configuration
 autodoc_default_options = {
@@ -41,6 +44,7 @@ autodoc_default_options = {
     'show-inheritance': True,
     'special-members': '__init__',
 }
+autodoc_typehints = 'description'  # Show type hints in parameter descriptions
 
 # Napoleon settings
 napoleon_google_docstring = True

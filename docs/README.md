@@ -20,7 +20,7 @@ make html
 
 ## Viewing Documentation
 
-After building, open `_build/html/index.html` in your browser.
+After building, open `build/html/index.html` in your browser.
 
 ## Documentation Structure
 
