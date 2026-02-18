@@ -14,9 +14,14 @@ pip install --group dev -e .
 or
 uv sync
 ```
-3. Install pre-commit:
+3. Install `pre-commit` (or equivalently `prek`):
 ```bash
 pipx --user install pre-commit
+or
+uv tool install pre-commit
+```
+The pre-commit hooks need to be installed (see more details in the section [Code Quality](#code-quality)). After doing so, they will be run at each commit.
+```
 pre-commit install
 ```
 
@@ -25,7 +30,7 @@ pre-commit install
 The project uses pytest for testing:
 
 ```bash
-# Run all tests
+# Run all tests, including notebooks
 pytest
 
 # Run with verbose output
@@ -39,6 +44,8 @@ Tests automatically configure JAX to use CPU-only mode for reproducibility. The 
 - **Unit tests**: Individual function testing with mocks
 - **Integration tests**: End-to-end testing with real JAX functions
 - **Platform tests**: Cross-platform compatibility testing
+- **Fonctional tests**: The documentation notebooks
+
 
 ## Code Quality
 
@@ -46,6 +53,9 @@ The project uses several pre-commit hooks for code quality. They include
 - ruff (linting and formatting)
 - mypy (type checking)
 - and others
+
+The pre-commit will be run against the files that are part of a Git commit. To run against all files
+(modified but not added or already committed):
 ```bash
 pre-commit run --all-files
 ```
@@ -53,14 +63,17 @@ pre-commit run --all-files
 ## Documentation
 
 Build documentation locally:
-
+The dependencies required to build the documentation have already been installed through `uv sync`. If you prefer using
+pip, this extra step is required:
 ```bash
-# Install documentation dependencies
 pip install --group docs .
+```
 
-# Build HTML documentation
+Then, the HTML documentation is built and inspected by:
+```
 cd docs
 make html
+firefox build/html/index.html
 ```
 
 The documentation uses:
@@ -69,21 +82,30 @@ The documentation uses:
 - **Read the Docs Theme**: Clean, responsive theme
 - **nbsphinx**: Jupyter notebook support
 
+
 ## Project Structure
 
 ```
 visu-hlo/
-├── visu_hlo.py          # Main module
-├── tests/               # Test suite
-│   ├── test_platform.py    # Platform detection tests
-│   ├── test_display.py     # Display functionality tests
-│   ├── test_show.py        # Main function tests
-│   ├── test_integration.py # Integration tests
-│   └── conftest.py         # Test configuration
-├── docs/                # Documentation
-│   └── source/             # Sphinx source files
-├── .github/             # CI/CD workflows
-└── pyproject.toml       # Project configuration
+├── src/visu_hlo/           # Main package
+│   ├── __init__.py            # Public API exports
+│   ├── _api.py                # Public functions (show, write_svg, write_dot)
+│   ├── _display.py            # Display utilities (HLOViewer, DotGraphViewer)
+│   └── _hlo.py                # HLO extraction utilities
+├── tests/                  # Test suite
+│   ├── conftest.py            # Test configuration
+│   ├── test_display.py        # Display functionality tests
+│   ├── test_hlo.py            # HLO extraction tests
+│   ├── test_integration.py    # Integration tests
+│   ├── test_interactive.py    # API function tests
+│   └── test_platform.py       # Platform detection tests
+├── docs/                   # Documentation
+│   └── source/
+│       ├── user-guide/        # User guide and examples
+│       ├── api/               # API reference
+│       └── developer-guide.md # This file
+├── .github/                # CI/CD workflows
+└── pyproject.toml          # Project configuration
 ```
 
 ## Contributing

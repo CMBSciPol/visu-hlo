@@ -1,6 +1,7 @@
 """Sphinx configuration file for visu_hlo documentation."""
 
 import sys
+from importlib.metadata import version as get_version
 from pathlib import Path
 
 # Add the src directory to the Python path
@@ -11,8 +12,8 @@ sys.path.insert(0, str(src_path))
 project = 'visu-hlo'
 copyright = '2025, Pierre Chanial'
 author = 'Pierre Chanial'
-version = '0.1.0'
-release = '0.1.0'
+release = get_version('visu-hlo')
+version = '.'.join(release.split('.')[:2])  # Major.minor
 
 # General configuration
 extensions = [
@@ -31,10 +32,12 @@ exclude_patterns = []
 
 # HTML output configuration
 html_theme = 'sphinx_rtd_theme'
-html_static_path = []
+html_static_path = ['_static']
 html_title = f'{project} v{version}'
 html_theme_options = {
-    'collapse_navigation': False,  # Expand all sections in sidebar
+    'collapse_navigation': True,  # Expand all sections in sidebar
+    'titles_only': True,
+    'display_version': True,
 }
 
 # Extension configuration
