@@ -66,5 +66,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y graphviz
 
-      - name: Run tests
-        run: uv run pytest -v
+      - name: Run unit tests
+        run: uv run pytest -v tests
+
+      - name: Run notebook tests
+        if: matrix.python.version == '3.14'
+        run: uv run pytest -v docs
