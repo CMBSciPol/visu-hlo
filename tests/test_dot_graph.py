@@ -1,31 +1,31 @@
 """Tests for HLO dot graph generation functions."""
 
-import jax.numpy as jnp
+import jax
 import visu_hlo
-from jax import jit
 
 
-def test_get_original_dot_graph():
-    """Test dot graph generation for original (non-jitted) functions."""
+def test_lowered_function():
+    """Test dot graph generation for a non-jitted functions."""
 
-    def simple_func(x):
+    def func(x):
         return x * 2
 
-    dot_graph = visu_hlo._get_original_dot_graph(simple_func, jnp.ones(3))
+    hlo = jax.jit(func).lower(2).as_text('hlo')
+    dot_graph = visu_hlo._get_dot_graph_from_hlo(hlo)
 
     assert isinstance(dot_graph, str)
     assert 'digraph' in dot_graph.lower()
     assert len(dot_graph) > 0
 
 
-def test_get_compiled_dot_graph():
-    """Test dot graph generation for compiled (jitted) functions."""
+def test_compiled_function():
+    """Test dot graph generation for a jitted functions."""
 
-    @jit
-    def jitted_func(x):
-        return x * 3
+    def func(x):
+        return x * 2
 
-    dot_graph = visu_hlo._get_compiled_dot_graph(jitted_func, jnp.ones(3))
+    hlo = jax.jit(func).lower(2).compile().as_text()
+    dot_graph = visu_hlo._get_dot_graph_from_hlo(hlo)
 
     assert isinstance(dot_graph, str)
     assert 'digraph' in dot_graph.lower()

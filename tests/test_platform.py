@@ -1,15 +1,22 @@
 """Tests for platform detection functionality."""
 
 import importlib
+from collections.abc import Iterator
 
 import pytest
 import pytest_mock
 import visu_hlo
 
 
+@pytest.fixture(autouse=True, scope='module')
+def cleanup_module() -> Iterator[None]:
+    yield
+    importlib.reload(visu_hlo)
+
+
 def test_linux_platform(mocker: pytest_mock.MockerFixture) -> None:
     """Test Linux platform detection."""
-    mocker.patch('platform.platform', return_value='Linux-5.4.0-42-generic-x86_64-with-glibc2.31')
+    mocker.patch('platform.system', return_value='Linux-5.4.0-42-generic-x86_64-with-glibc2.31')
     importlib.reload(visu_hlo)
     assert visu_hlo.DISPLAY_PROGRAM == 'xdg-open'
 

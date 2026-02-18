@@ -1,22 +1,26 @@
 """Tests for the main show function."""
 
+import jax
 import jax.numpy as jnp
 import pytest
 import pytest_mock
 import visu_hlo
-from jax import jit
 
 
-def test_show_original_function(mocker: pytest_mock.MockerFixture) -> None:
+@pytest.mark.parametrize('do_jit', [False, True])
+def test_function(mocker: pytest_mock.MockerFixture, do_jit: bool) -> None:
     """Test show function with original (non-jitted) function."""
     mocked_pipe_string = mocker.patch('graphviz.pipe_string', return_value='<svg>test</svg>')
     mocked_display_svg = mocker.patch('visu_hlo._display_svg')
-    spied_get_graph = mocker.spy(visu_hlo, '_get_original_dot_graph')
+    spied_get_graph = mocker.spy(visu_hlo, '_get_dot_graph_from_hlo')
 
-    def test_func(x):
+    def func(x):
         return x + 1
 
-    visu_hlo.show(test_func, jnp.ones(3))
+    if do_jit:
+        func = jax.jit(func)
+
+    visu_hlo.show(func, jnp.ones(3))
 
     assert spied_get_graph.call_count == 1
     mocked_pipe_string.assert_called_once()
@@ -27,29 +31,6 @@ def test_show_original_function(mocker: pytest_mock.MockerFixture) -> None:
     assert kwargs.get('encoding') == 'utf-8'
 
     mocked_display_svg.assert_called_once_with('<svg>test</svg>')
-
-
-def test_show_jitted_function(mocker: pytest_mock.MockerFixture) -> None:
-    """Test show function with jitted function."""
-    mocked_pipe_string = mocker.patch('graphviz.pipe_string', return_value='<svg>jitted_test</svg>')
-    mocked_display_svg = mocker.patch('visu_hlo._display_svg')
-    spied_get_graph = mocker.spy(visu_hlo, '_get_compiled_dot_graph')
-
-    @jit
-    def jitted_func(x):
-        return x * 2
-
-    visu_hlo.show(jitted_func, jnp.ones(3))
-
-    assert spied_get_graph.call_count == 1
-    mocked_pipe_string.assert_called_once()
-    args, kwargs = mocked_pipe_string.call_args
-    assert args[0] == 'dot'
-    assert args[1] == 'svg'
-    assert isinstance(args[2], str)  # DOT graph string
-    assert kwargs.get('encoding') == 'utf-8'
-
-    mocked_display_svg.assert_called_once_with('<svg>jitted_test</svg>')
 
 
 def test_show_with_args_and_kwargs(mocker: pytest_mock.MockerFixture) -> None:
@@ -80,7 +61,7 @@ def test_show_detects_jitted_function_correctly(
     def regular_func(x):
         return x
 
-    @jit
+    @jax.jit
     def jitted_func(x):
         return x
 
