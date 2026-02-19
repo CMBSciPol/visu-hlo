@@ -1,5 +1,6 @@
 """Display utilities for HLO and DOT graphs."""
 
+import os
 import platform
 import subprocess
 from functools import cached_property
@@ -13,14 +14,20 @@ from jaxlib.xla_client import _xla as xla  # type: ignore[attr-defined]
 if TYPE_CHECKING:
     from IPython.core.interactiveshell import InteractiveShell
 
-if platform.platform().startswith('Linux'):
+
+class GraphvizNotFoundError(Exception):
+    """Raised when Graphviz is not installed or not found in PATH."""
+
+
+_system = platform.system()
+if _system == 'Linux':
     DISPLAY_PROGRAM = 'xdg-open'
-elif platform.platform() == 'Darwin':
+elif _system == 'Darwin':
     DISPLAY_PROGRAM = 'open'
-elif platform.platform().startswith('Windows'):
+elif _system == 'Windows':
     DISPLAY_PROGRAM = 'start'
 else:
-    raise RuntimeError('Unsupported platform')
+    raise RuntimeError(f'Unsupported platform: {_system}')
 
 
 class DotGraphViewer:
@@ -50,9 +57,17 @@ class DotGraphViewer:
         display(SVG(svg_graph))
 
     def _show_in_program(self) -> None:
-        with NamedTemporaryFile(suffix='.svg', delete=False) as file:
-            self.write_svg(file.name)
-            subprocess.run([DISPLAY_PROGRAM, file.name])
+        tmp_path = None
+        try:
+            with NamedTemporaryFile(suffix='.svg', delete=False) as file:
+                tmp_path = file.name
+                self.write_svg(tmp_path)
+                subprocess.run([DISPLAY_PROGRAM, tmp_path], check=False)
+        except Exception:
+            # Clean up temporary file on error
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+            raise
 
     def write_dot(self, path: str | Path) -> None:
         """Write the Dot Graph as file.
@@ -72,8 +87,14 @@ class DotGraphViewer:
         Path(path).write_text(svg_graph)
 
     def _as_svg(self) -> str:
-        result: str = graphviz.pipe_string('dot', 'svg', self.dot_graph, encoding='utf-8')
-        return result
+        try:
+            result: str = graphviz.pipe_string('dot', 'svg', self.dot_graph, encoding='utf-8')
+            return result
+        except graphviz.ExecutableNotFound as e:
+            raise GraphvizNotFoundError(
+                'Graphviz is not installed or not found in PATH. '
+                'Please install Graphviz: https://graphviz.org/download/'
+            ) from e
 
     @staticmethod
     def _in_notebook() -> bool:

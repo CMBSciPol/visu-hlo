@@ -44,7 +44,7 @@ Tests automatically configure JAX to use CPU-only mode for reproducibility. The 
 - **Unit tests**: Individual function testing with mocks
 - **Integration tests**: End-to-end testing with real JAX functions
 - **Platform tests**: Cross-platform compatibility testing
-- **Fonctional tests**: The documentation notebooks
+- **Functional tests**: The documentation notebooks
 
 
 ## Code Quality

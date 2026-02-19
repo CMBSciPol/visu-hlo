@@ -35,9 +35,8 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 html_title = f'{project} v{version}'
 html_theme_options = {
-    'collapse_navigation': True,  # Expand all sections in sidebar
+    'collapse_navigation': True,  # Collapse sections in sidebar
     'titles_only': True,
-    'display_version': True,
 }
 
 # Extension configuration

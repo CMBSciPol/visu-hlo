@@ -60,3 +60,34 @@ pip install --group cuda12 .
 ```
 
 This installs JAX with CUDA 12 support.
+
+## Troubleshooting
+
+### GraphvizNotFoundError
+
+If you see the error:
+```
+GraphvizNotFoundError: Graphviz is not installed or not found in PATH.
+```
+
+This means the Graphviz system package is not installed. Install it using the instructions in the [System Dependencies](#system-dependencies) section above.
+
+**Note:** The Python `graphviz` package (installed automatically with visu-hlo) is just a wrapper. You also need the Graphviz system binaries (`dot`, `neato`, etc.) to be installed and available in your PATH.
+
+### JAX Installation Issues
+
+If JAX fails to install, you may need to install it separately first:
+
+```bash
+pip install jax jaxlib
+```
+
+For specific hardware (GPU/TPU), see the [JAX installation guide](https://github.com/google/jax#installation).
+
+### Import Errors
+
+If you get import errors related to `jaxlib`, ensure you have compatible versions of JAX and jaxlib:
+
+```bash
+pip install --upgrade jax jaxlib
+```

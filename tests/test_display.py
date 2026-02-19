@@ -2,10 +2,11 @@
 
 import subprocess
 
+import graphviz
 import pytest
 import pytest_mock
 
-from visu_hlo._display import DISPLAY_PROGRAM, DotGraphViewer
+from visu_hlo._display import DISPLAY_PROGRAM, DotGraphViewer, GraphvizNotFoundError, HLOViewer
 
 
 class TestInNotebook:
@@ -38,6 +39,34 @@ class TestInNotebook:
         assert DotGraphViewer._in_notebook() is False
 
 
+class TestDotGraphViewerShow:
+    """Tests for DotGraphViewer.show() dispatch."""
+
+    def test_show_dispatches_to_notebook(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test that show() dispatches to _show_in_notebook when in notebook."""
+        mocker.patch.object(DotGraphViewer, '_in_notebook', return_value=True)
+        mock_show_in_notebook = mocker.patch.object(DotGraphViewer, '_show_in_notebook')
+        mock_show_in_program = mocker.patch.object(DotGraphViewer, '_show_in_program')
+
+        viewer = DotGraphViewer('digraph {}')
+        viewer.show()
+
+        mock_show_in_notebook.assert_called_once()
+        mock_show_in_program.assert_not_called()
+
+    def test_show_dispatches_to_program(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test that show() dispatches to _show_in_program when not in notebook."""
+        mocker.patch.object(DotGraphViewer, '_in_notebook', return_value=False)
+        mock_show_in_notebook = mocker.patch.object(DotGraphViewer, '_show_in_notebook')
+        mock_show_in_program = mocker.patch.object(DotGraphViewer, '_show_in_program')
+
+        viewer = DotGraphViewer('digraph {}')
+        viewer.show()
+
+        mock_show_in_program.assert_called_once()
+        mock_show_in_notebook.assert_not_called()
+
+
 class TestDotGraphViewerShowInProgram:
     """Tests for terminal display mode."""
 
@@ -52,7 +81,7 @@ class TestDotGraphViewerShowInProgram:
         viewer._show_in_program()
 
         mock_write_svg.assert_called_once_with('/tmp/test.svg')
-        mock_subprocess.assert_called_once_with([DISPLAY_PROGRAM, '/tmp/test.svg'])
+        mock_subprocess.assert_called_once_with([DISPLAY_PROGRAM, '/tmp/test.svg'], check=False)
 
     def test_show_in_program_subprocess_error(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test handling of subprocess errors."""
@@ -142,3 +171,84 @@ class TestDotGraphViewerAsSvg:
 
         mock_pipe.assert_called_once_with('dot', 'svg', 'digraph { a -> b }', encoding='utf-8')
         assert result == '<svg></svg>'
+
+    def test_as_svg_graphviz_not_found(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test error handling when Graphviz is not installed."""
+        mocker.patch(
+            'graphviz.pipe_string',
+            side_effect=graphviz.ExecutableNotFound(['dot']),
+        )
+
+        viewer = DotGraphViewer('digraph {}')
+        with pytest.raises(GraphvizNotFoundError, match='Graphviz is not installed'):
+            viewer._as_svg()
+
+
+class TestGraphvizNotFoundError:
+    """Tests for GraphvizNotFoundError exception."""
+
+    def test_exception_is_importable(self) -> None:
+        """Test that the exception can be imported from the package."""
+        from visu_hlo import GraphvizNotFoundError as ImportedError
+
+        assert ImportedError is GraphvizNotFoundError
+
+    def test_exception_message(self) -> None:
+        """Test exception message content."""
+        err = GraphvizNotFoundError('test message')
+        assert 'test message' in str(err)
+
+
+class TestHLOViewer:
+    """Tests for HLOViewer class."""
+
+    def test_init(self) -> None:
+        """Test HLOViewer initialization."""
+        hlo = 'HloModule test'
+        viewer = HLOViewer(hlo)
+        assert viewer.hlo == hlo
+
+    def test_show(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test that show() delegates to DotGraphViewer.show()."""
+        mock_dot_viewer = mocker.MagicMock()
+        mocker.patch.object(HLOViewer, '_dot_graph_viewer', mock_dot_viewer)
+
+        viewer = HLOViewer('HloModule test')
+        viewer.show()
+
+        mock_dot_viewer.show.assert_called_once()
+
+    def test_write_dot(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test that write_dot() delegates to DotGraphViewer.write_dot()."""
+        mock_dot_viewer = mocker.MagicMock()
+        mocker.patch.object(HLOViewer, '_dot_graph_viewer', mock_dot_viewer)
+
+        viewer = HLOViewer('HloModule test')
+        viewer.write_dot('/path/to/file.dot')
+
+        mock_dot_viewer.write_dot.assert_called_once_with('/path/to/file.dot')
+
+    def test_write_svg(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test that write_svg() delegates to DotGraphViewer.write_svg()."""
+        mock_dot_viewer = mocker.MagicMock()
+        mocker.patch.object(HLOViewer, '_dot_graph_viewer', mock_dot_viewer)
+
+        viewer = HLOViewer('HloModule test')
+        viewer.write_svg('/path/to/file.svg')
+
+        mock_dot_viewer.write_svg.assert_called_once_with('/path/to/file.svg')
+
+    def test_dot_graph_viewer_cached_property(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test that _dot_graph_viewer creates DotGraphViewer from HLO."""
+        mock_hlo_module = mocker.MagicMock()
+        mock_xla = mocker.patch('visu_hlo._display.xla')
+        mock_xla.hlo_module_from_text.return_value = mock_hlo_module
+        mock_xla.hlo_module_to_dot_graph.return_value = 'digraph { a -> b }'
+
+        viewer = HLOViewer('HloModule test')
+        dot_viewer = viewer._dot_graph_viewer
+
+        mock_xla.hlo_module_from_text.assert_called_once_with('HloModule test')
+        mock_xla.hlo_module_to_dot_graph.assert_called_once_with(mock_hlo_module)
+        assert isinstance(dot_viewer, DotGraphViewer)
+        assert dot_viewer.dot_graph == 'digraph { a -> b }'
