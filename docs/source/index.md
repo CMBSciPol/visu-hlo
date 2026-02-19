@@ -15,6 +15,8 @@ end-before: "<!-- End common text with source/index.md -->"
 ---
 ```
 
+## Content
+
 ```{toctree}
 :maxdepth: 2
 :caption: User Guide
