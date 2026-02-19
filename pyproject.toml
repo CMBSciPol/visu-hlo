@@ -31,6 +31,7 @@ dependencies = [
 dev = [
     {include-group = 'docs'},
     'pytest>=9.0',
+    "pytest-cov>=7.0.0",
     'pytest-notebook>=0.10',
     'pytest_mock',
 ]
@@ -55,7 +56,6 @@ Issues = 'https://github.com/CMBSciPol/visu-hlo/issues'
 [tool.hatch.version]
 source = 'vcs'
 
-
 [[tool.mypy.overrides]]
 module = [
     'graphviz',
@@ -64,13 +64,16 @@ module = [
 ignore_missing_imports = true
 
 [tool.pytest]
-testpaths = ['tests', 'docs/source']
+testpaths = ['tests']
 addopts = [
     '--verbose',
     '--tb=short',
     '--strict-markers',
     '--strict-config',
     '--color=yes',
+    '-m',
+    'not integration',
+    '--cov=visu_hlo',
 ]
 filterwarnings = [
     'ignore::DeprecationWarning',
@@ -88,6 +91,10 @@ nb_diff_ignore = [
     '/cells/*/outputs',
     '/metadata/language_info',
 ]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
 
 [tool.ruff]
 line-length = 100

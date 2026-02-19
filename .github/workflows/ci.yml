@@ -67,8 +67,16 @@ jobs:
           sudo apt-get install -y graphviz
 
       - name: Run unit tests
-        run: uv run pytest -v tests
+        run: uv run pytest -v -m "not integration" --cov=visu_hlo --cov-report=xml tests
 
-      - name: Run notebook tests
+      - name: Run notebook and integration tests
         if: matrix.python.version == '3.14'
-        run: uv run pytest -v docs
+        run: uv run pytest -v docs tests/test_integration.py
+
+      - name: Upload coverage to Codecov
+        if: matrix.python.version == '3.12'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: false
