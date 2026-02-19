@@ -31,12 +31,18 @@ templates_path = ['_templates']
 exclude_patterns = []
 
 # HTML output configuration
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'furo'
 html_static_path = ['_static']
 html_title = f'{project} v{version}'
 html_theme_options = {
-    'collapse_navigation': True,  # Collapse sections in sidebar
-    'titles_only': True,
+    'light_css_variables': {
+        'color-brand-primary': '#2EBF4F',
+        'color-brand-content': '#2EBF4F',
+    },
+    'dark_css_variables': {
+        'color-brand-primary': '#34D058',
+        'color-brand-content': '#34D058',
+    },
 }
 
 # Extension configuration

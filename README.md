@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://raw.githubusercontent.com/CMBSciPol/visu-hlo/main/docs/source/_static/logo.svg" alt="VISU-HLO" width="70%">
+<img src="https://raw.githubusercontent.com/CMBSciPol/visu-hlo/main/docs/source/_static/logo.svg" alt="VISU-HLO" width="100%">
 </div>
 
 
