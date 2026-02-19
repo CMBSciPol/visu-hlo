@@ -1,6 +1,6 @@
 """Display utilities for HLO and DOT graphs."""
 
-import os
+import atexit
 import platform
 import subprocess
 from functools import cached_property
@@ -57,17 +57,11 @@ class DotGraphViewer:
         display(SVG(svg_graph))
 
     def _show_in_program(self) -> None:
-        tmp_path = None
-        try:
-            with NamedTemporaryFile(suffix='.svg', delete=False) as file:
-                tmp_path = file.name
-                self.write_svg(tmp_path)
-                subprocess.run([DISPLAY_PROGRAM, tmp_path], check=False)
-        except Exception:
-            # Clean up temporary file on error
-            if tmp_path and os.path.exists(tmp_path):
-                os.unlink(tmp_path)
-            raise
+        with NamedTemporaryFile(suffix='.svg', delete=False) as file:
+            tmp_path = Path(file.name)
+        self.write_svg(tmp_path)
+        subprocess.run([DISPLAY_PROGRAM, str(tmp_path)], check=False)
+        atexit.register(lambda: tmp_path.unlink(missing_ok=True))
 
     def write_dot(self, path: str | Path) -> None:
         """Write the Dot Graph as file.

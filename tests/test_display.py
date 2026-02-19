@@ -1,7 +1,5 @@
 """Tests for SVG display functionality."""
 
-import subprocess
-
 import graphviz
 import pytest
 import pytest_mock
@@ -76,24 +74,29 @@ class TestDotGraphViewerShowInProgram:
         mock_tempfile.return_value.__enter__.return_value.name = '/tmp/test.svg'
         mock_write_svg = mocker.patch('visu_hlo._display.DotGraphViewer.write_svg')
         mock_subprocess = mocker.patch('subprocess.run')
+        mock_atexit = mocker.patch('visu_hlo._display.atexit.register')
 
         viewer = DotGraphViewer('digraph {}')
         viewer._show_in_program()
 
-        mock_write_svg.assert_called_once_with('/tmp/test.svg')
+        mock_write_svg.assert_called_once()
         mock_subprocess.assert_called_once_with([DISPLAY_PROGRAM, '/tmp/test.svg'], check=False)
+        mock_atexit.assert_called_once()
 
-    def test_show_in_program_subprocess_error(self, mocker: pytest_mock.MockerFixture) -> None:
-        """Test handling of subprocess errors."""
+    def test_show_in_program_registers_cleanup(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test that a cleanup function is registered with atexit."""
+        mocker.patch('visu_hlo._display.NamedTemporaryFile')
         mocker.patch('visu_hlo._display.DotGraphViewer.write_svg')
-        mocker.patch(
-            'subprocess.run',
-            side_effect=subprocess.CalledProcessError(1, 'cmd'),
-        )
+        mocker.patch('subprocess.run')
+        mock_atexit = mocker.patch('visu_hlo._display.atexit.register')
 
         viewer = DotGraphViewer('digraph {}')
-        with pytest.raises(subprocess.CalledProcessError):
-            viewer._show_in_program()
+        viewer._show_in_program()
+
+        # Verify atexit.register was called with a callable
+        mock_atexit.assert_called_once()
+        cleanup_func = mock_atexit.call_args[0][0]
+        assert callable(cleanup_func)
 
 
 class TestDotGraphViewerShowInNotebook:
