@@ -16,7 +16,7 @@ class TestGetViewerDispatch:
         mocked_from_lowered_function = mocker.patch('visu_hlo._api.from_lowered_function')
         mocked_from_compiled_function = mocker.patch('visu_hlo._api.from_compiled_function')
         mocked_from_stable_hlo = mocker.patch('visu_hlo._api.from_stable_hlo')
-        mock_viewer = mocker.patch('visu_hlo._api.HLOViewer')
+        mocked_viewer = mocker.patch('visu_hlo._api.HLOViewer')
         hlo_string = 'HloModule test_module'
 
         _get_viewer(hlo_string)
@@ -24,20 +24,20 @@ class TestGetViewerDispatch:
         mocked_from_lowered_function.assert_not_called()
         mocked_from_compiled_function.assert_not_called()
         mocked_from_stable_hlo.assert_not_called()
-        mock_viewer.assert_called_once_with(hlo_string)
+        mocked_viewer.assert_called_once_with(hlo_string)
 
     def test_stable_hlo_string(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that StableHLO strings dispatch to from_stable_hlo."""
         mocked_from_stable_hlo = mocker.patch(
             'visu_hlo._api.from_stable_hlo', return_value='HloModule stable_hlo_test'
         )
-        mock_viewer = mocker.patch('visu_hlo._api.HLOViewer')
+        mocked_viewer = mocker.patch('visu_hlo._api.HLOViewer')
         stablehlo_string = 'module @test { func.func @main() {} }'
 
         _get_viewer(stablehlo_string)
 
         mocked_from_stable_hlo.assert_called_once_with(stablehlo_string)
-        mock_viewer.assert_called_once_with('HloModule stable_hlo_test')
+        mocked_viewer.assert_called_once_with('HloModule stable_hlo_test')
 
     def test_non_jitted_function_gets_jitted(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that non-jitted functions are jitted when jit=True."""
@@ -148,12 +148,12 @@ class TestShow:
 
     def test_calls_viewer_show(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that show() calls viewer.show()."""
-        mock_viewer_instance = mocker.MagicMock()
-        mocker.patch('visu_hlo._api._get_viewer', return_value=mock_viewer_instance)
+        mocked_viewer_instance = mocker.MagicMock()
+        mocker.patch('visu_hlo._api._get_viewer', return_value=mocked_viewer_instance)
 
         show('HloModule test')
 
-        mock_viewer_instance.show.assert_called_once()
+        mocked_viewer_instance.show.assert_called_once()
 
 
 class TestWriteDot:
@@ -161,25 +161,25 @@ class TestWriteDot:
 
     def test_calls_viewer_write_dot(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that write_dot() calls viewer.write_dot() with the path."""
-        mock_viewer_instance = mocker.MagicMock()
-        mocker.patch('visu_hlo._api._get_viewer', return_value=mock_viewer_instance)
+        mocked_viewer_instance = mocker.MagicMock()
+        mocker.patch('visu_hlo._api._get_viewer', return_value=mocked_viewer_instance)
 
         write_dot('/path/to/file.dot', 'HloModule test')
 
-        mock_viewer_instance.write_dot.assert_called_once_with('/path/to/file.dot')
+        mocked_viewer_instance.write_dot.assert_called_once_with('/path/to/file.dot')
 
     def test_passes_args_to_get_viewer(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that write_dot() passes arguments to _get_viewer."""
-        mock_get_viewer = mocker.patch('visu_hlo._api._get_viewer')
-        mock_get_viewer.return_value = mocker.MagicMock()
+        mocked_get_viewer = mocker.patch('visu_hlo._api._get_viewer')
+        mocked_get_viewer.return_value = mocker.MagicMock()
 
         def func(x):
             return x
 
         write_dot('/path/to/file.dot', func, jnp.ones(3), jit=False)
 
-        mock_get_viewer.assert_called_once()
-        args, kwargs = mock_get_viewer.call_args
+        mocked_get_viewer.assert_called_once()
+        args, kwargs = mocked_get_viewer.call_args
         assert args[0] is func
         assert jnp.array_equal(args[1], jnp.ones(3))
         assert kwargs == {'jit': False}
@@ -190,25 +190,25 @@ class TestWriteSvg:
 
     def test_calls_viewer_write_svg(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that write_svg() calls viewer.write_svg() with the path."""
-        mock_viewer_instance = mocker.MagicMock()
-        mocker.patch('visu_hlo._api._get_viewer', return_value=mock_viewer_instance)
+        mocked_viewer_instance = mocker.MagicMock()
+        mocker.patch('visu_hlo._api._get_viewer', return_value=mocked_viewer_instance)
 
         write_svg('/path/to/file.svg', 'HloModule test')
 
-        mock_viewer_instance.write_svg.assert_called_once_with('/path/to/file.svg')
+        mocked_viewer_instance.write_svg.assert_called_once_with('/path/to/file.svg')
 
     def test_passes_args_to_get_viewer(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test that write_svg() passes arguments to _get_viewer."""
-        mock_get_viewer = mocker.patch('visu_hlo._api._get_viewer')
-        mock_get_viewer.return_value = mocker.MagicMock()
+        mocked_get_viewer = mocker.patch('visu_hlo._api._get_viewer')
+        mocked_get_viewer.return_value = mocker.MagicMock()
 
         def func(x):
             return x
 
         write_svg('/path/to/file.svg', func, jnp.ones(3), jit=False)
 
-        mock_get_viewer.assert_called_once()
-        args, kwargs = mock_get_viewer.call_args
+        mocked_get_viewer.assert_called_once()
+        args, kwargs = mocked_get_viewer.call_args
         assert args[0] is func
         assert jnp.array_equal(args[1], jnp.ones(3))
         assert kwargs == {'jit': False}
