@@ -5,7 +5,7 @@ build-backend = 'hatchling.build'
 [project]
 name = 'visu-hlo'
 dynamic = ['version']
-description = 'Displays the HLO representation of (un-)jitted functions as SVG'
+description = 'Displays the HLO representation of (un-)jitted JAX functions as SVG'
 authors = [{name = 'Pierre Chanial', email = 'chanial@apc.in2p3.fr'}]
 license = 'MIT'
 readme = 'README.md'
