@@ -110,6 +110,7 @@ select = [
     'UP',     # pyupgrade
     'T10',    # flake8-debugger
 ]
+ignore = ['E501']
 
 [tool.ruff.format]
 quote-style = 'single'
