@@ -84,11 +84,11 @@ class DotGraphViewer:
         try:
             result: str = graphviz.pipe_string('dot', 'svg', self.dot_graph, encoding='utf-8')
             return result
-        except graphviz.ExecutableNotFound as e:
+        except graphviz.ExecutableNotFound:
             raise GraphvizNotFoundError(
                 'Graphviz is not installed or not found in PATH. '
                 'Please install Graphviz: https://graphviz.org/download/'
-            ) from e
+            ) from None
 
     @staticmethod
     def _in_notebook() -> bool:
