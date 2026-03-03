@@ -59,7 +59,7 @@ def from_stable_hlo(stable_hlo_str: str) -> str:
     # Parse StableHLO in MLIR bytecode
     ctx = make_ir_context()
     with ctx:
-        module = ir.Module.parse(stable_hlo_str)  # type: ignore[attr-defined]
+        module = ir.Module.parse(stable_hlo_str)
         bytecode: bytes = module.operation.get_asm(binary=True)
 
     computation = jaxlib._jax.mlir.mlir_module_to_xla_computation(bytecode, use_tuple_args=False)

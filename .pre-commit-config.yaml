@@ -35,7 +35,7 @@ repos:
   hooks:
   - id: mypy
     additional_dependencies:
-    - jax
+    - jax==0.9.1
     args:
     - --strict
     - --show-error-codes
