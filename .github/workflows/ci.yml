@@ -61,13 +61,13 @@ jobs:
           uv pip install dist/visu_hlo-*.whl
           uv pip install "jax${{ matrix.python.jax }}"
 
+      - name: Run unit tests
+        run: uv run pytest -v -m "not integration" --cov=visu_hlo --cov-report=xml tests
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y graphviz
-
-      - name: Run unit tests
-        run: uv run pytest -v -m "not integration" --cov=visu_hlo --cov-report=xml tests
 
       - name: Run notebook and integration tests
         if: matrix.python.version == '3.14'
