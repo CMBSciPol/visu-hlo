@@ -74,6 +74,7 @@ addopts = [
     '-m',
     'not integration',
     '--cov=visu_hlo',
+    '--no-cov-on-fail',
 ]
 filterwarnings = [
     'ignore::DeprecationWarning',
