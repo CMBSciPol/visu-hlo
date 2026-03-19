@@ -1,4 +1,4 @@
-# API Reference
+# APIs
 
 ## show()
 
