@@ -14,7 +14,7 @@ def test_from_lowered_function():
 
     hlo = from_lowered_function(func, jnp.ones(3))
 
-    assert hlo.startswith('HloModule jit_func')
+    assert hlo.startswith('HloModule func')
 
 
 def test_from_compiled_function():

@@ -46,7 +46,7 @@ class TestDotGraphViewerShow:
         mocked_show_in_notebook = mocker.patch.object(DotGraphViewer, '_show_in_notebook')
         mocked_show_in_program = mocker.patch.object(DotGraphViewer, '_show_in_program')
 
-        viewer = DotGraphViewer('digraph {}')
+        viewer = DotGraphViewer('digraph {}', title='test')
         viewer.show()
 
         mocked_show_in_notebook.assert_called_once()
@@ -58,7 +58,7 @@ class TestDotGraphViewerShow:
         mocked_show_in_notebook = mocker.patch.object(DotGraphViewer, '_show_in_notebook')
         mocked_show_in_program = mocker.patch.object(DotGraphViewer, '_show_in_program')
 
-        viewer = DotGraphViewer('digraph {}')
+        viewer = DotGraphViewer('digraph {}', title='test')
         viewer.show()
 
         mocked_show_in_program.assert_called_once()
@@ -76,9 +76,12 @@ class TestDotGraphViewerShowInProgram:
         mocked_subprocess = mocker.patch('subprocess.run')
         mocked_atexit = mocker.patch('visu_hlo._display.atexit.register')
 
-        viewer = DotGraphViewer('digraph {}')
+        viewer = DotGraphViewer('digraph {}', title='Optimized HLO for func')
         viewer._show_in_program()
 
+        mocked_tempfile.assert_called_once_with(
+            prefix='Optimized HLO for func - ', suffix='.svg', delete=False
+        )
         mocked_write_svg.assert_called_once()
         mocked_subprocess.assert_called_once_with([DISPLAY_PROGRAM, '/tmp/test.svg'], check=False)
         mocked_atexit.assert_called_once()
@@ -90,7 +93,7 @@ class TestDotGraphViewerShowInProgram:
         mocker.patch('subprocess.run')
         mocked_atexit = mocker.patch('visu_hlo._display.atexit.register')
 
-        viewer = DotGraphViewer('digraph {}')
+        viewer = DotGraphViewer('digraph {}', title='test')
         viewer._show_in_program()
 
         # Verify atexit.register was called with a callable
@@ -108,7 +111,7 @@ class TestDotGraphViewerShowInNotebook:
         mocked_display = mocker.patch('IPython.display.display')
         mocker.patch('visu_hlo._display.DotGraphViewer._as_svg', return_value='<svg></svg>')
 
-        viewer = DotGraphViewer('digraph {}')
+        viewer = DotGraphViewer('digraph {}', title='test')
         viewer._show_in_notebook()
 
         mocked_svg.assert_called_once_with('<svg></svg>')
@@ -122,7 +125,7 @@ class TestDotGraphViewerShowInNotebook:
         mocked_tempfile = mocker.patch('visu_hlo._display.NamedTemporaryFile')
         mocked_subprocess = mocker.patch('subprocess.run')
 
-        viewer = DotGraphViewer('digraph {}')
+        viewer = DotGraphViewer('digraph {}', title='test')
         viewer._show_in_notebook()
 
         mocked_tempfile.assert_not_called()
@@ -135,7 +138,7 @@ class TestDotGraphViewerWrite:
     def test_write_dot(self, mocker: pytest_mock.MockerFixture, tmp_path) -> None:
         """Test writing DOT file."""
         dot_content = 'digraph { a -> b }'
-        viewer = DotGraphViewer(dot_content)
+        viewer = DotGraphViewer(dot_content, title='test')
 
         output_path = tmp_path / 'test.dot'
         viewer.write_dot(output_path)
@@ -146,7 +149,7 @@ class TestDotGraphViewerWrite:
         """Test writing SVG file."""
         mocker.patch('visu_hlo._display.DotGraphViewer._as_svg', return_value='<svg>test</svg>')
 
-        viewer = DotGraphViewer('digraph {}')
+        viewer = DotGraphViewer('digraph {}', title='test')
         output_path = tmp_path / 'test.svg'
         viewer.write_svg(output_path)
 
@@ -157,7 +160,7 @@ class TestDotGraphViewerWrite:
         mocker.patch('visu_hlo._display.DotGraphViewer._as_svg', return_value='<svg></svg>')
         mocker.patch('visu_hlo._display.Path.write_text', side_effect=OSError('Cannot write'))
 
-        viewer = DotGraphViewer('digraph {}')
+        viewer = DotGraphViewer('digraph {}', title='test')
         with pytest.raises(OSError, match='Cannot write'):
             viewer.write_svg('/invalid/path.svg')
 
@@ -169,11 +172,11 @@ class TestDotGraphViewerAsSvg:
         """Test that _as_svg calls graphviz correctly."""
         mocked_pipe = mocker.patch('graphviz.pipe_string', return_value='<svg></svg>')
 
-        viewer = DotGraphViewer('digraph { a -> b }')
+        viewer = DotGraphViewer('digraph { a -> b }', title='test')
         result = viewer._as_svg()
 
         mocked_pipe.assert_called_once_with('dot', 'svg', 'digraph { a -> b }', encoding='utf-8')
-        assert result == '<svg></svg>'
+        assert result == '<svg>\n<title>test</title></svg>'
 
     def test_as_svg_graphviz_not_found(self, mocker: pytest_mock.MockerFixture) -> None:
         """Test error handling when Graphviz is not installed."""
@@ -182,9 +185,39 @@ class TestDotGraphViewerAsSvg:
             side_effect=graphviz.ExecutableNotFound(['dot']),
         )
 
-        viewer = DotGraphViewer('digraph {}')
+        viewer = DotGraphViewer('digraph {}', title='test')
         with pytest.raises(GraphvizNotFoundError, match='Graphviz is not installed'):
             viewer._as_svg()
+
+
+class TestDotGraphViewerAsSvgTitle:
+    """Tests for title injection in _as_svg()."""
+
+    def test_title_injected_in_svg(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test that a title element is injected after the svg tag."""
+        mocker.patch(
+            'graphviz.pipe_string',
+            return_value='<svg width="100" height="100"><g></g></svg>',
+        )
+
+        viewer = DotGraphViewer('digraph {}', title='Optimized HLO for func')
+        result = viewer._as_svg()
+
+        assert result.startswith(
+            '<svg width="100" height="100">\n<title>Optimized HLO for func</title>'
+        )
+
+    def test_title_html_escaped(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test that special characters in title are HTML-escaped."""
+        mocker.patch(
+            'graphviz.pipe_string',
+            return_value='<svg><g></g></svg>',
+        )
+
+        viewer = DotGraphViewer('digraph {}', title='HLO for <lambda>')
+        result = viewer._as_svg()
+
+        assert '<title>HLO for &lt;lambda&gt;</title>' in result
 
 
 class TestGraphvizNotFoundError:
@@ -255,3 +288,46 @@ class TestHLOViewer:
         mocked_xla.hlo_module_to_dot_graph.assert_called_once_with(mocked_hlo_module)
         assert isinstance(dot_viewer, DotGraphViewer)
         assert dot_viewer.dot_graph == 'digraph { a -> b }'
+
+    def test_dot_graph_viewer_propagates_title(self, mocker: pytest_mock.MockerFixture) -> None:
+        """Test that title is propagated to DotGraphViewer."""
+        mocker.patch('visu_hlo._display.xla')
+
+        viewer = HLOViewer('HloModule jit_func')
+        dot_viewer = viewer._dot_graph_viewer
+
+        assert dot_viewer.title == 'Optimized HLO for func'
+
+
+class TestHLOViewerTitle:
+    """Tests for HLOViewer.title derivation."""
+
+    def test_jit_prefix_optimized(self) -> None:
+        """Test that jit_ prefix produces 'Optimized HLO for <name>'."""
+        viewer = HLOViewer('HloModule jit_my_func')
+        assert viewer.title == 'Optimized HLO for my_func'
+
+    def test_no_jit_prefix_non_optimized(self) -> None:
+        """Test that no jit_ prefix produces 'Non-optimized HLO for <name>'."""
+        viewer = HLOViewer('HloModule my_module')
+        assert viewer.title == 'Non-optimized HLO for my_module'
+
+    def test_lambda_optimized(self) -> None:
+        """Test that jit__lambda becomes <lambda>."""
+        viewer = HLOViewer('HloModule jit__lambda')
+        assert viewer.title == 'Optimized HLO for <lambda>'
+
+    def test_lambda_non_optimized(self) -> None:
+        """Test that _lambda becomes <lambda> for non-optimized HLO."""
+        viewer = HLOViewer('HloModule _lambda')
+        assert viewer.title == 'Non-optimized HLO for <lambda>'
+
+    def test_double_underscore(self) -> None:
+        """Test that jit_ prefix is stripped, preserving leading underscores."""
+        viewer = HLOViewer('HloModule jit___bench_func')
+        assert viewer.title == 'Optimized HLO for __bench_func'
+
+    def test_trailing_comma(self) -> None:
+        """Test that trailing comma after module name is handled."""
+        viewer = HLOViewer('HloModule jit_func, entry_computation_layout={}')
+        assert viewer.title == 'Optimized HLO for func'

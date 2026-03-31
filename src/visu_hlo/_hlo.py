@@ -1,5 +1,6 @@
 """HLO extraction utilities."""
 
+import re
 from collections.abc import Callable
 from typing import Any
 
@@ -20,6 +21,8 @@ def from_lowered_function(f: Callable[..., Any], *args: Any, **keywords: Any) ->
     """
     lowered = jax.jit(f).lower(*args, **keywords)
     result: str = lowered.as_text('hlo')
+    # jax.jit adds a "jit_" prefix to the module name; remove it since this is non-optimized HLO
+    result = re.sub(r'^(HloModule )jit_', r'\1', result, count=1)
     return result
 
 

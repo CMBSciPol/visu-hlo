@@ -2,8 +2,10 @@
 
 import atexit
 import platform
+import re
 import subprocess
 from functools import cached_property
+from html import escape
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
@@ -37,8 +39,9 @@ class DotGraphViewer:
         dot_graph: DOT graph string.
     """
 
-    def __init__(self, dot_graph: str) -> None:
+    def __init__(self, dot_graph: str, title: str) -> None:
         self.dot_graph = dot_graph
+        self.title = title
 
     def show(self) -> None:
         """Display the DOT graph as SVG.
@@ -57,7 +60,8 @@ class DotGraphViewer:
         display(SVG(svg_graph))
 
     def _show_in_program(self) -> None:
-        with NamedTemporaryFile(suffix='.svg', delete=False) as file:
+        prefix = f'{self.title} - '
+        with NamedTemporaryFile(prefix=prefix, suffix='.svg', delete=False) as file:
             tmp_path = Path(file.name)
         self.write_svg(tmp_path)
         subprocess.run([DISPLAY_PROGRAM, str(tmp_path)], check=False)
@@ -83,12 +87,14 @@ class DotGraphViewer:
     def _as_svg(self) -> str:
         try:
             result: str = graphviz.pipe_string('dot', 'svg', self.dot_graph, encoding='utf-8')
-            return result
         except graphviz.ExecutableNotFound:
             raise GraphvizNotFoundError(
                 'Graphviz is not installed or not found in PATH. '
                 'Please install Graphviz: https://graphviz.org/download/'
             ) from None
+        title = escape(self.title)
+        result = re.sub(r'(<svg\b[^>]*>)', rf'\1\n<title>{title}</title>', result, count=1)
+        return result
 
     @staticmethod
     def _in_notebook() -> bool:
@@ -115,6 +121,21 @@ class HLOViewer:
 
     def __init__(self, hlo: str) -> None:
         self.hlo = hlo
+
+    @cached_property
+    def title(self) -> str:
+        """Title derived from the HLO module name."""
+        # "HloModule jit___bench_func, ..." -> "jit___bench_func"
+        module_name = self.hlo.split()[1].rstrip(',')
+        if module_name.startswith('jit_'):
+            name = module_name.removeprefix('jit_')
+            prefix = 'Optimized HLO'
+        else:
+            name = module_name
+            prefix = 'Non-optimized HLO'
+        if name == '_lambda':
+            name = '<lambda>'
+        return f'{prefix} for {name}'
 
     def show(self) -> None:
         """Display the HLO graph as SVG.
@@ -143,4 +164,4 @@ class HLOViewer:
     def _dot_graph_viewer(self) -> DotGraphViewer:
         hlo_module = xla.hlo_module_from_text(self.hlo)
         dot_graph = xla.hlo_module_to_dot_graph(hlo_module)
-        return DotGraphViewer(dot_graph)
+        return DotGraphViewer(dot_graph, title=self.title)
